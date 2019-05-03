@@ -25,4 +25,5 @@ sudo chmod 0777 /etc/php/7.2/mods-available/xdebug.ini
 sudo echo "$xdebug_configuration" > /etc/php/7.2/mods-available/xdebug.ini
 
 # Install node-sass for scss files
+npm init
 npm install -D node-sass nodemon
