@@ -105,6 +105,7 @@ class Homestead
       4040 => 4040,
       5432 => 54320,
       8025 => 8025,
+      9600 => 9600,
       27017 => 27017
     }
 
@@ -210,17 +211,14 @@ class Homestead
         end
     end
 
-    # Install Zend Z-Ray If Necessary
-    if settings.has_key?("zray") && settings["zray"]
-        config.vm.provision "shell" do |s|
-            s.name = "Installing Zend Z-Ray"
-            s.path = script_dir + "/install-zray.sh"
-        end
-    end
-
     # Install All The Configured Nginx Sites
     config.vm.provision 'shell' do |s|
       s.path = script_dir + '/clear-nginx.sh'
+    end
+
+    # Clear any Homestead sites and insert markers in /etc/hosts
+    config.vm.provision 'shell' do |s|
+      s.path = script_dir + '/hosts-reset.sh'
     end
 
     if settings.include? 'sites'
@@ -283,21 +281,18 @@ class Homestead
           end
 
           s.path = script_dir + "/serve-#{type}.sh"
-          s.args = [site['map'], site['to'], site['port'] ||= http_port, site['ssl'] ||= https_port, site['php'] ||= '7.3', params ||= '', site['zray'] ||= 'false', site['xhgui'] ||= '', site['exec'] ||= 'false', headers ||= '', rewrites ||= '']
+          s.args = [site['map'], site['to'], site['port'] ||= http_port, site['ssl'] ||= https_port, site['php'] ||= '7.3', params ||= '', site['xhgui'] ||= '', site['exec'] ||= 'false', headers ||= '', rewrites ||= '']
 
-          if site['zray'] == 'true'
-            config.vm.provision 'shell' do |s|
-              s.inline = 'ln -sf /opt/zray/gui/public ' + site['to'] + '/ZendServer'
-            end
-            config.vm.provision 'shell' do |s|
-              s.inline = 'ln -sf /opt/zray/lib/zray.so /usr/lib/php/20170718/zray.so'
-            end
-            config.vm.provision 'shell' do |s|
-              s.inline = 'ln -sf /opt/zray/zray.ini /etc/php/7.2/fpm/conf.d/zray.ini'
-            end
-          else
-            config.vm.provision 'shell' do |s|
-              s.inline = 'rm -rf ' + site['to'].to_s + '/ZendServer'
+          # generate pm2 json config file
+          if site['pm2']
+            config.vm.provision "shell" do |s2|
+              s2.name = 'Creating Site Ecosystem for pm2: ' + site['map']
+              s2.path = script_dir + "/create-ecosystem.sh"
+              s2.args = Array.new
+              s2.args << site['pm2'][0]['name']
+              s2.args << site['pm2'][0]['script'] ||= "npm"
+              s2.args << site['pm2'][0]['args'] ||= "run serve"
+              s2.args << site['pm2'][0]['cwd']
             end
           end
 
@@ -395,6 +390,14 @@ class Homestead
       end
     end
 
+    # Install Docker-CE If Necessary
+    if settings.has_key?("docker") && settings["docker"]
+        config.vm.provision "shell" do |s|
+            s.name = "Installing Docker-CE"
+            s.path = script_dir + "/install-docker-ce.sh"
+        end
+    end
+
     # Install DotNetCore If Necessary
     if settings.has_key?("dotnetcore") && settings["dotnetcore"]
         config.vm.provision "shell" do |s|
@@ -405,11 +408,11 @@ class Homestead
 
     # Install Elasticsearch If Necessary
     if settings.has_key?('elasticsearch') && settings['elasticsearch']
-      config.vm.provision 'shell' do |s|
-        s.name = 'Installing Elasticsearch'
-        s.path = script_dir + '/install-elasticsearch.sh'
-        s.args = settings['elasticsearch']
-      end
+        config.vm.provision 'shell' do |s|
+            s.name = 'Installing Elasticsearch'
+            s.path = script_dir + '/install-elasticsearch.sh'
+            s.args = settings['elasticsearch']
+        end
     end
 
     # Install Go If Necessary
@@ -470,6 +473,14 @@ class Homestead
         end
     end
 
+    # Install Python If Necessary
+    if settings.has_key?("python") && settings["python"]
+        config.vm.provision "shell" do |s|
+            s.name = "Installing Python"
+            s.path = script_dir + "/install-python.sh"
+        end
+    end
+
     # Install Ruby & Rails If Necessary
     if settings.has_key?("ruby") && settings["ruby"]
         config.vm.provision "shell" do |s|
@@ -478,7 +489,7 @@ class Homestead
         end
     end
 
-    # Install WebDriver & Dusk Utils If Necessary
+    # Install WebDriver & Dust Utils If Necessary
     if settings.has_key?("webdriver") && settings["webdriver"]
         config.vm.provision "shell" do |s|
             s.name = "Installing WebDriver Utilities"
