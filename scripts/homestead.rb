@@ -18,7 +18,7 @@ class Homestead
     # Configure The Box
     config.vm.define settings['name'] ||= 'homestead-7'
     config.vm.box = settings['box'] ||= 'laravel/homestead'
-    config.vm.box_version = settings['version'] ||= '>= 7.2.1'
+    config.vm.box_version = settings['version'] ||= '>= 7.2.1, < 8.0.0-alpha1'
     config.vm.hostname = settings['hostname'] ||= 'homestead'
 
     # Configure A Private Network IP
@@ -205,10 +205,10 @@ class Homestead
 
     # Install Crystal If Necessary
     if settings.has_key?("crystal") && settings["crystal"]
-        config.vm.provision "shell" do |s|
-            s.name = "Installing Crystal & Lucky"
-            s.path = script_dir + "/install-crystal.sh"
-        end
+      config.vm.provision "shell" do |s|
+        s.name = "Installing Crystal & Lucky"
+        s.path = script_dir + "/install-crystal.sh"
+      end
     end
 
     # Install All The Configured Nginx Sites
@@ -240,9 +240,9 @@ class Homestead
         https_port = load_balancer ? '8112' : '443'
 
         if load_balancer
-            config.vm.provision 'shell' do |s|
-                s.path = script_dir + '/install-load-balancer.sh'
-            end
+          config.vm.provision 'shell' do |s|
+            s.path = script_dir + '/install-load-balancer.sh'
+          end
         end
 
         case type
@@ -266,14 +266,14 @@ class Homestead
           if site.include? 'headers'
             headers = '('
             site['headers'].each do |header|
-                headers += ' [' + header['key'] + ']=' + header['value']
+              headers += ' [' + header['key'] + ']=' + header['value']
             end
             headers += ' )'
           end
           if site.include? 'rewrites'
             rewrites = '('
             site['rewrites'].each do |rewrite|
-                rewrites += ' [' + rewrite['map'] + ']=' + "'" + rewrite['to'] + "'"
+              rewrites += ' [' + rewrite['map'] + ']=' + "'" + rewrite['to'] + "'"
             end
             rewrites += ' )'
             # Escape variables for bash
@@ -314,6 +314,11 @@ class Homestead
             end
           end
 
+        end
+
+        config.vm.provision 'shell' do |s|
+          s.path = script_dir + "/hosts-add.sh"
+          s.args = ['127.0.0.1', site['map']]
         end
 
         # Configure The Cron Schedule
@@ -358,8 +363,8 @@ class Homestead
         end
 
         config.vm.provision 'shell' do |s|
-            s.inline = "echo \"\nenv[$1] = '$2'\" >> /etc/php/7.3/fpm/pool.d/www.conf"
-            s.args = [var['key'], var['value']]
+          s.inline = "echo \"\nenv[$1] = '$2'\" >> /etc/php/7.3/fpm/pool.d/www.conf"
+          s.args = [var['key'], var['value']]
         end
 
         config.vm.provision 'shell' do |s|
@@ -392,42 +397,42 @@ class Homestead
 
     # Install Docker-CE If Necessary
     if settings.has_key?("docker") && settings["docker"]
-        config.vm.provision "shell" do |s|
-            s.name = "Installing Docker-CE"
-            s.path = script_dir + "/install-docker-ce.sh"
-        end
+      config.vm.provision "shell" do |s|
+        s.name = "Installing Docker-CE"
+        s.path = script_dir + "/install-docker-ce.sh"
+      end
     end
 
     # Install DotNetCore If Necessary
     if settings.has_key?("dotnetcore") && settings["dotnetcore"]
-        config.vm.provision "shell" do |s|
-            s.name = "Installing DotNet Core"
-            s.path = script_dir + "/install-dotnet-core.sh"
-        end
+      config.vm.provision "shell" do |s|
+        s.name = "Installing DotNet Core"
+        s.path = script_dir + "/install-dotnet-core.sh"
+      end
     end
 
     # Install Elasticsearch If Necessary
     if settings.has_key?('elasticsearch') && settings['elasticsearch']
-        config.vm.provision 'shell' do |s|
-            s.name = 'Installing Elasticsearch'
-            s.path = script_dir + '/install-elasticsearch.sh'
-            s.args = settings['elasticsearch']
-        end
+      config.vm.provision 'shell' do |s|
+        s.name = 'Installing Elasticsearch'
+        s.path = script_dir + '/install-elasticsearch.sh'
+        s.args = settings['elasticsearch']
+      end
     end
 
     # Install Go If Necessary
     if settings.has_key?("golang") && settings["golang"]
-        config.vm.provision "shell" do |s|
-            s.name = "Installing Go"
-            s.path = script_dir + "/install-golang.sh"
-        end
+      config.vm.provision "shell" do |s|
+        s.name = "Installing Go"
+        s.path = script_dir + "/install-golang.sh"
+      end
     end
 
     # Install InfluxDB if Necessary
     if settings.has_key?('influxdb') && settings['influxdb']
-        config.vm.provision 'shell' do |s|
-            s.path = script_dir + '/install-influxdb.sh'
-        end
+      config.vm.provision 'shell' do |s|
+        s.path = script_dir + '/install-influxdb.sh'
+      end
     end
 
     # Install MariaDB If Necessary
@@ -453,9 +458,9 @@ class Homestead
 
     # Install MySQL 8 If Necessary
     if settings.has_key?('mysql8') && settings['mysql8']
-        config.vm.provision 'shell' do |s|
-            s.path = script_dir + '/install-mysql8.sh'
-        end
+      config.vm.provision 'shell' do |s|
+        s.path = script_dir + '/install-mysql8.sh'
+      end
     end
 
     # Install Neo4j If Necessary
@@ -467,34 +472,34 @@ class Homestead
 
     # Install Oh-My-Zsh If Necessary
     if settings.has_key?("ohmyzsh") && settings["ohmyzsh"]
-        config.vm.provision "shell" do |s|
-            s.name = "Installing Oh-My-Zsh"
-            s.path = script_dir + "/install-ohmyzsh.sh"
-        end
+      config.vm.provision "shell" do |s|
+        s.name = "Installing Oh-My-Zsh"
+        s.path = script_dir + "/install-ohmyzsh.sh"
+      end
     end
 
     # Install Python If Necessary
     if settings.has_key?("python") && settings["python"]
-        config.vm.provision "shell" do |s|
-            s.name = "Installing Python"
-            s.path = script_dir + "/install-python.sh"
-        end
+      config.vm.provision "shell" do |s|
+        s.name = "Installing Python"
+        s.path = script_dir + "/install-python.sh"
+      end
     end
 
     # Install Ruby & Rails If Necessary
     if settings.has_key?("ruby") && settings["ruby"]
-        config.vm.provision "shell" do |s|
-            s.name = "Installing Ruby & Rails"
-            s.path = script_dir + "/install-ruby.sh"
-        end
+      config.vm.provision "shell" do |s|
+        s.name = "Installing Ruby & Rails"
+        s.path = script_dir + "/install-ruby.sh"
+      end
     end
 
     # Install WebDriver & Dust Utils If Necessary
     if settings.has_key?("webdriver") && settings["webdriver"]
-        config.vm.provision "shell" do |s|
-            s.name = "Installing WebDriver Utilities"
-            s.path = script_dir + "/install-webdriver.sh"
-        end
+      config.vm.provision "shell" do |s|
+        s.name = "Installing WebDriver Utilities"
+        s.path = script_dir + "/install-webdriver.sh"
+      end
     end
 
     # Configure All Of The Configured Databases
@@ -543,17 +548,17 @@ class Homestead
 
     # Create Minio Buckets
     if settings.has_key?('buckets') && settings['minio']
-        settings['buckets'].each do |bucket|
-            config.vm.provision 'shell' do |s|
-                s.name = 'Creating Minio Bucket: ' + bucket['name']
-                s.path = script_dir + '/create-minio-bucket.sh'
-                s.args = [bucket['name'], bucket['policy'] || 'none']
-            end
+      settings['buckets'].each do |bucket|
+        config.vm.provision 'shell' do |s|
+          s.name = 'Creating Minio Bucket: ' + bucket['name']
+          s.path = script_dir + '/create-minio-bucket.sh'
+          s.args = [bucket['name'], bucket['policy'] || 'none']
         end
+      end
     end
 
     # Install grafana if Necessary
-    if settings.has_key?('influxdb') && settings['influxdb']
+    if settings.has_key?('grafana') && settings['grafana']
       config.vm.provision 'shell' do |s|
         s.path = script_dir + '/install-grafana.sh'
       end
@@ -564,6 +569,14 @@ class Homestead
     if settings.has_key?('chronograf') && settings['chronograf']
       config.vm.provision 'shell' do |s|
         s.path = script_dir + '/install-chronograf.sh'
+      end
+    end
+
+    # Install openresty if Necessary
+    if settings.has_key?('openresty') && settings['openresty']
+      config.vm.provision 'shell' do |s|
+        s.name = 'Installing openresty'
+        s.path = script_dir + '/install-openresty.sh'
       end
     end
 
@@ -595,8 +608,8 @@ class Homestead
     end
 
     config.vm.provision 'shell' do |s|
-        s.name = 'Update motd'
-        s.inline = 'sudo service motd-news restart'
+      s.name = 'Update motd'
+      s.inline = 'sudo service motd-news restart'
     end
 
     if settings.has_key?('backup') && settings['backup'] && (Vagrant::VERSION >= '2.1.0' || Vagrant.has_plugin?('vagrant-triggers'))
