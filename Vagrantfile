@@ -45,4 +45,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         config.hostmanager.manage_host = true
         config.hostmanager.aliases = settings['sites'].map { |site| site['map'] }
     end
+
+    # Fix for VirtualBox 6.0.6
+        if Vagrant.has_plugin?("vagrant-vbguest")
+            config.vbguest.auto_update = false
+        end
 end
