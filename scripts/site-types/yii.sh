@@ -49,6 +49,12 @@ block="server {
 
     $rewritesTXT
 
+
+    location /index-test.php/ {
+        try_files \$uri \$uri/ /index-test.php\$is_args\$args;
+        $headersTXT
+    }
+
     location / {
         try_files \$uri \$uri/ /index.php\$is_args\$args;
         $headersTXT
@@ -67,8 +73,6 @@ block="server {
     error_log  /var/log/nginx/$1-error.log error;
 
     sendfile off;
-
-    client_max_body_size 100m;
 
     location ~ \.php$ {
         fastcgi_split_path_info ^(.+\.php)(/.+)$;

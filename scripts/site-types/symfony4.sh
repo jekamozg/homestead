@@ -62,10 +62,8 @@ block="server {
 
     sendfile off;
 
-    client_max_body_size 100m;
-
     # DEV
-    location ~ ^/index\.php(/|\$) {
+    location ~ \.php(/|\$) {
         fastcgi_split_path_info ^(.+\.php)(/.*)\$;
         fastcgi_pass unix:/var/run/php/php$5-fpm.sock;
         include fastcgi_params;
